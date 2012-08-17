@@ -66,7 +66,7 @@ public class LockettePlayerListener implements Listener{
 		// Reload config files, for admins only.
 		if(command.length == 2){
 			if(command[1].equalsIgnoreCase("reload")){
-				if(!plugin.hasPermission(player.getWorld(), player, "lockette.admin.reload")) return;
+				if(!player.hasPermission("lockette.admin.reload")) return;
 				
 				plugin.loadProperties(true);
 				
@@ -75,7 +75,7 @@ public class LockettePlayerListener implements Listener{
 			}
 			
 			if(command[1].equalsIgnoreCase("version")){
-				player.sendMessage(ChatColor.RED + "Lockette version " + plugin.getDescription().getVersion() + " loaded.  (Core: " + Lockette.getCoreVersion() + ")");
+				player.sendMessage(ChatColor.RED + "Lockette version " + plugin.getDescription().getVersion() + " loaded. ");
 				return;
 			}
 			
@@ -111,7 +111,7 @@ public class LockettePlayerListener implements Listener{
 				else if(text.equals("[more users]") || text.equalsIgnoreCase(Lockette.altMoreUsers)){
 					privateSign = false;
 					
-					Block		checkBlock = Lockette.getSignAttachedBlock(block);
+					Block		checkBlock = PluginUtil.getSignAttachedBlock(block);
 					if(checkBlock == null){plugin.localizedMessage(player, null, "msg-error-edit"); return;}
 					
 					Block		signBlock = Lockette.findBlockOwner(checkBlock);
@@ -363,7 +363,7 @@ public class LockettePlayerListener implements Listener{
 		}
 		*/
 		if(allow){
-			List<Block> list = Lockette.toggleDoors(block, Lockette.getSignAttachedBlock(signBlock), wooden, trap);
+			List<Block> list = Lockette.toggleDoors(block, PluginUtil.getSignAttachedBlock(signBlock), wooden, trap);
 			
 			int delta = Lockette.getSignOption(signBlock, "timer", Lockette.altTimer, Lockette.defaultDoorTimer);
 			
@@ -398,7 +398,7 @@ public class LockettePlayerListener implements Listener{
 		
 		if(text.equals("[private]") || text.equalsIgnoreCase(Lockette.altPrivate)){}
 		else if(text.equals("[more users]") || text.equalsIgnoreCase(Lockette.altMoreUsers)){
-			Block		checkBlock = Lockette.getSignAttachedBlock(block);
+			Block		checkBlock = PluginUtil.getSignAttachedBlock(block);
 			if(checkBlock == null) return;
 			
 			signBlock = Lockette.findBlockOwner(checkBlock);
@@ -485,7 +485,7 @@ public class LockettePlayerListener implements Listener{
 		line = sign.getLine(1).replaceAll("(?i)\u00A7[0-F]", "");
 		
 		if(line.equals(player.getName().substring(0, length))) return(true);
-		if(plugin.inGroup(block.getWorld(), player, line)) return(true);
+		//TODO: Move into Lockette if(plugin.inGroup(block.getWorld(), player, line)) return(true);
 		
 		
 		// Check main two users.
@@ -495,7 +495,7 @@ public class LockettePlayerListener implements Listener{
 		for(y = 2; y <= 3; ++y) if(!sign.getLine(y).isEmpty()){
 			line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
 			
-			if(plugin.inGroup(block.getWorld(), player, line)) return(true);
+			//TODO: Move into Lockette if(plugin.inGroup(block.getWorld(), player, line)) return(true);
 			if(line.equalsIgnoreCase(player.getName().substring(0, length))) return(true);
 		}
 		
@@ -512,7 +512,7 @@ public class LockettePlayerListener implements Listener{
 			for(y = 1; y <= 3; ++y) if(!sign2.getLine(y).isEmpty()){
 				line = sign2.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
 				
-				if(plugin.inGroup(block.getWorld(), player, line)) return(true);
+				//TODO: Move into Lockette if(plugin.inGroup(block.getWorld(), player, line)) return(true);
 				if(line.equalsIgnoreCase(player.getName().substring(0, length))) return(true);
 			}
 		}
@@ -524,7 +524,7 @@ public class LockettePlayerListener implements Listener{
 		
 		if(isDoor){
 			if(Lockette.adminBypass){
-				if(plugin.hasPermission(block.getWorld(), player, "lockette.admin.bypass")) snoop = true;
+				if(player.hasPermission("lockette.admin.bypass")) snoop = true;
 				
 				if(snoop){
 					Lockette.log.info("[" + plugin.getDescription().getName() + "] (Admin) " + player.getName() + " has bypassed a door owned by " + sign.getLine(1));
@@ -535,7 +535,7 @@ public class LockettePlayerListener implements Listener{
 			}
 		}
 		else if(Lockette.adminSnoop){
-			if(plugin.hasPermission(block.getWorld(), player, "lockette.admin.snoop")) snoop = true;
+			if(player.hasPermission("lockette.admin.snoop")) snoop = true;
 			
 			if(snoop){
 				Lockette.log.info("[" + plugin.getDescription().getName() + "] (Admin) " + player.getName() + " has snooped around in a container owned by " + sign.getLine(1) + "!");

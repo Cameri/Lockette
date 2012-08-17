@@ -28,9 +28,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.block.SignChangeEvent;
 
-import org.yi.acru.bukkit.PluginCore;
-
-
 
 public class LocketteBlockListener implements Listener{
 	private static Lockette		plugin;
@@ -61,13 +58,13 @@ public class LocketteBlockListener implements Listener{
 	// Start of event section
 	
 	
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockBreak(BlockBreakEvent event){
 		Player		player = event.getPlayer();
 		Block		block = event.getBlock();
 		int			type = block.getTypeId();
 		
-		if(event.isCancelled()) if(type != Material.WOODEN_DOOR.getId()) return;
+		if(type != Material.WOODEN_DOOR.getId()) return;
 		
 		
 		// Someone is breaking a block, lets see if they are allowed.
@@ -106,7 +103,7 @@ public class LocketteBlockListener implements Listener{
 				if(Lockette.adminBreak){
 					boolean		snoop = false;
 					
-					if(plugin.hasPermission(block.getWorld(), player, "lockette.admin.break")) snoop = true;
+					if(player.hasPermission("lockette.admin.break")) snoop = true;
 					
 					if(snoop){
 						Lockette.log.info("[" + plugin.getDescription().getName() + "] (Admin) " + player.getName() + " has broken open a container owned by " + sign.getLine(1) + "!");
@@ -123,7 +120,7 @@ public class LocketteBlockListener implements Listener{
 				plugin.localizedMessage(player, null, "msg-user-release-owned", sign.getLine(1));
 			}
 			else if(text.equals("[more users]") || text.equalsIgnoreCase(Lockette.altMoreUsers)){
-				Block		checkBlock = Lockette.getSignAttachedBlock(block);
+				Block		checkBlock = PluginUtil.getSignAttachedBlock(block);
 				if(checkBlock == null) return;
 				
 				Block		signBlock = Lockette.findBlockOwner(checkBlock);
@@ -206,7 +203,7 @@ public class LocketteBlockListener implements Listener{
 		
 		// The above misses doors at the end of the chain, in the space the blocks are being pushed into.
 		
-		checkBlock = block.getRelative(Lockette.getPistonFacing(block), event.getLength() + 1);
+		checkBlock = block.getRelative(PluginUtil.getPistonFacing(block), event.getLength() + 1);
 
 		if(Lockette.isProtected(checkBlock)){
 			event.setCancelled(true);
@@ -220,7 +217,7 @@ public class LocketteBlockListener implements Listener{
 		if(!(event.isSticky())) return;
 
 		Block		block = event.getBlock();
-		Block		checkBlock = block.getRelative(Lockette.getPistonFacing(block), 2);
+		Block		checkBlock = block.getRelative(PluginUtil.getPistonFacing(block), 2);
 		//Block		checkBlock = event.getRetractLocation().getBlock();
 		int			type = checkBlock.getTypeId();
 		
@@ -281,7 +278,7 @@ public class LocketteBlockListener implements Listener{
 		
 		
 		if(Lockette.directPlacement) if(type == Material.WALL_SIGN.getId()){
-			Block		checkBlock = Lockette.getSignAttachedBlock(block);
+			Block		checkBlock = PluginUtil.getSignAttachedBlock(block);
 			
 			if(checkBlock == null) return;
 			
@@ -311,8 +308,10 @@ public class LocketteBlockListener implements Listener{
 				}
 				else{
 					// Check for permission first.
+				
 					
-					if(plugin.usingExternalZones()){
+					//This is not needed, I moved out priority on to HIGH
+/*					if(plugin.usingExternalZones()){
 						if(!plugin.canBuild(player, block)){
 							event.setCancelled(true);
 							
@@ -326,26 +325,26 @@ public class LocketteBlockListener implements Listener{
 							plugin.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
 							return;
 						}
-					}
+					}*/
 					
-					if(plugin.usingExternalPermissions()){
+					//if(plugin.usingExternalPermissions()){
 						boolean		create = false;
 						
-						if(plugin.hasPermission(block.getWorld(), player, "lockette.create.all")) create = true;
+						if(player.hasPermission("lockette.create.all")) create = true;
 						else if(type == Material.CHEST.getId()){
-							if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.chest")) create = true;
+							if(player.hasPermission("lockette.user.create.chest")) create = true;
 						}
 						else if((type == Material.FURNACE.getId()) || (type == Material.BURNING_FURNACE.getId())){
-							if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.furnace")) create = true;
+							if(player.hasPermission("lockette.user.create.furnace")) create = true;
 						}
 						else if(type == Material.DISPENSER.getId()){
-							if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.dispenser")) create = true;
+							if(player.hasPermission("lockette.user.create.dispenser")) create = true;
 						}
 						else if(type == Material.BREWING_STAND.getId()){
-							if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.brewingstand")) create = true;
+							if(player.hasPermission("lockette.user.create.brewingstand")) create = true;
 						}
 						else if(Lockette.isInList(type, Lockette.customBlockList)){
-							if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.custom")) create = true;
+							if(player.hasPermission("lockette.user.create.custom")) create = true;
 						}
 						
 						
@@ -355,7 +354,7 @@ public class LocketteBlockListener implements Listener{
 							plugin.localizedMessage(player, null, "msg-error-permission");
 							return;
 						}
-					}
+					//}
 					
 					
 					sign.setLine(0, Lockette.altPrivate);
@@ -617,16 +616,16 @@ public class LocketteBlockListener implements Listener{
 			
 			// Check for permission first.
 			
-			if(plugin.usingExternalZones()){
+/*			if(plugin.usingExternalZones()){
 				if(!plugin.canBuild(player, block)){
 					event.setLine(0, "[?]");
 					
 					plugin.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
 					return;
 				}
-			}
+			}*/
 			
-			if(plugin.usingExternalPermissions()){
+			//if(plugin.usingExternalPermissions()){
 				boolean		create = false;
 				
 				doChests = false;
@@ -637,7 +636,7 @@ public class LocketteBlockListener implements Listener{
 				doTrapDoors = false;
 				doDoors = false;
 				
-				if(plugin.hasPermission(block.getWorld(), player, "lockette.create.all")){
+				if(player.hasPermission("lockette.create.all")){
 					create = true;
 					doChests = true;
 					doFurnaces = true;
@@ -648,35 +647,35 @@ public class LocketteBlockListener implements Listener{
 					doDoors = true;
 				}
 				else{
-					if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.chest")){
+					if(player.hasPermission("lockette.user.create.chest")){
 						create = true;
 						doChests = true;
 					}
-					if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.furnace")){
+					if(player.hasPermission("lockette.user.create.furnace")){
 						create = true;
 						doFurnaces = true;
 					}
-					if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.dispenser")){
+					if(player.hasPermission("lockette.user.create.dispenser")){
 						create = true;
 						doDispensers = true;
 					}
-					if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.brewingstand")){
+					if(player.hasPermission("lockette.user.create.brewingstand")){
 						create = true;
 						doBrewingStands = true;
 					}
-					if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.custom")){
+					if(player.hasPermission("lockette.user.create.custom")){
 						create = true;
 						doCustoms = true;
 					}
-					if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.trapdoor")){
+					if(player.hasPermission("lockette.user.create.trapdoor")){
 						create = true;
 						doTrapDoors = true;
 					}
-					if(plugin.hasPermission(block.getWorld(), player, "lockette.user.create.door")){
+					if(player.hasPermission("lockette.user.create.door")){
 						create = true;
 						doDoors = true;
 					}
-				}
+				//}
 				
 				if(!create){
 					event.setLine(0, "[?]");
@@ -694,13 +693,13 @@ public class LocketteBlockListener implements Listener{
 			int			type = 0;
 			boolean		conflict = false;
 			boolean		deny = false;
-			boolean		zonedeny = false;
+			//boolean		zonedeny = false;
 			
 			
 			// Check wall sign attached block for trap doors.
 			
 			if(Lockette.protectTrapDoors) if(typeWallSign){
-				checkBlock[3] = Lockette.getSignAttachedBlock(block);
+				checkBlock[3] = PluginUtil.getSignAttachedBlock(block);
 				
 				if(checkBlock[3] != null) if(!isInList(checkBlock[3].getTypeId(), materialListBad)){
 					checkBlock[0] = checkBlock[3].getRelative(BlockFace.NORTH);
@@ -735,7 +734,7 @@ public class LocketteBlockListener implements Listener{
 			// Check wall sign attached block for doors, above and below.
 			
 			if(Lockette.protectDoors) if(typeWallSign){
-				checkBlock[0] = Lockette.getSignAttachedBlock(block);
+				checkBlock[0] = PluginUtil.getSignAttachedBlock(block);
 				
 				if(checkBlock[0] != null) if(!isInList(checkBlock[0].getTypeId(), materialListBad)){
 					checkBlock[1] = checkBlock[0].getRelative(BlockFace.UP);
@@ -811,12 +810,12 @@ public class LocketteBlockListener implements Listener{
 				checkBlock[3] = block.getRelative(BlockFace.WEST);
 				
 				for(x = 0; x < 4; ++x){
-					if(plugin.usingExternalZones()){
+/*					if(plugin.usingExternalZones()){
 						if(!plugin.canBuild(player, checkBlock[x])){
 							zonedeny = true;
 							continue;
 						}
-					}
+					}*/
 					
 					
 					// Check if allowed by type.
@@ -902,7 +901,7 @@ public class LocketteBlockListener implements Listener{
 				event.setLine(0, "[?]");
 				
 				if(conflict) plugin.localizedMessage(player, null, "msg-error-claim-conflict");
-				else if(zonedeny) plugin.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
+				//else if(zonedeny) plugin.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
 				else if(deny) plugin.localizedMessage(player, null, "msg-error-permission");
 				else plugin.localizedMessage(player, null, "msg-error-claim");
 				return;
@@ -923,25 +922,25 @@ public class LocketteBlockListener implements Listener{
 			if(anyone){
 				// Check if allowed by type.
 				if(type == 1){	// Chest
-					if(!plugin.hasPermission(block.getWorld(), player, "lockette.admin.create.chest")) anyone = false;
+					if(!player.hasPermission("lockette.admin.create.chest")) anyone = false;
 				}
 				else if(type == 2){	// Furnace
-					if(!plugin.hasPermission(block.getWorld(), player, "lockette.admin.create.furnace")) anyone = false;
+					if(!player.hasPermission("lockette.admin.create.furnace")) anyone = false;
 				}
 				else if(type == 3){	// Dispenser
-					if(!plugin.hasPermission(block.getWorld(), player, "lockette.admin.create.dispenser")) anyone = false;
+					if(!player.hasPermission("lockette.admin.create.dispenser")) anyone = false;
 				}
 				else if(type == 6){	// Brewing Stand
-					if(!plugin.hasPermission(block.getWorld(), player, "lockette.admin.create.brewingstand")) anyone = false;
+					if(!player.hasPermission("lockette.admin.create.brewingstand")) anyone = false;
 				}
 				else if(type == 7){	// Custom
-					if(!plugin.hasPermission(block.getWorld(), player, "lockette.admin.create.custom")) anyone = false;
+					if(!player.hasPermission("lockette.admin.create.custom")) anyone = false;
 				}
 				else if(type == 4){	// Trap Door
-					if(!plugin.hasPermission(block.getWorld(), player, "lockette.admin.create.trapdoor")) anyone = false;
+					if(!player.hasPermission("lockette.admin.create.trapdoor")) anyone = false;
 				}
 				else if(type == 5){	// Door
-					if(!plugin.hasPermission(block.getWorld(), player, "lockette.admin.create.door")) anyone = false;
+					if(!player.hasPermission("lockette.admin.create.door")) anyone = false;
 				}
 				else anyone = false;
 			}
@@ -1000,7 +999,7 @@ public class LocketteBlockListener implements Listener{
 			// Check wall sign attached block for owner.
 			
 			if(Lockette.protectDoors || Lockette.protectTrapDoors) if(typeWallSign){
-				checkBlock[0] = Lockette.getSignAttachedBlock(block);
+				checkBlock[0] = PluginUtil.getSignAttachedBlock(block);
 				
 				if(checkBlock[0] != null) if(!isInList(checkBlock[0].getTypeId(), materialListBad)){
 					signBlock = Lockette.findBlockOwner(checkBlock[0]);

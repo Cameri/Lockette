@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
@@ -22,19 +23,13 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import org.yi.acru.bukkit.PluginCore;
-
-
-
-public class Lockette extends PluginCore{
-	private static Lockette					plugin;
+public class Lockette extends JavaPlugin{
 	private static boolean					enabled = false;
 	
 	private static boolean					registered = false;
@@ -58,23 +53,17 @@ public class Lockette extends PluginCore{
 	
 	protected static FileConfiguration			strings = null;
 	protected final HashMap<String, Block>	playerList = new HashMap<String, Block>();
-
+	
+	protected static Logger log = Logger.getLogger("Minecraft");
+	
 	final static int		materialTrapDoor = 96;
 	final static int		materialFenceGate = 107;
-	
-	
-	public Lockette(){
-		plugin = this;
-	}
-	
-	
-	public void onLoad(){}
-	
 	
 	public void onEnable(){
 		if(enabled) return;
 		
-		log.info("[" + getDescription().getName() + "] Version " + this.getDescription().getVersion() + " is being enabled!  Yay!  (Core version " + getCoreVersion() + ")");
+		
+		log.info("[" + getDescription().getName() + "] Version " + this.getDescription().getVersion() + " is being enabled!  Yay!");
 		
 		
 		// Check build version.
@@ -82,7 +71,7 @@ public class Lockette extends PluginCore{
 		final int	recBuild = 1846;
 		final int	minBuild = 1846;
 		int			printBuild;
-		float		build = getBuildVersion();
+		float		build = Float.parseFloat(getServer().getVersion());
 		
 		if((build > 399) && (build < 400)) printBuild = (int) ((build - 399) * 100);
 		else printBuild = (int) build;
@@ -115,6 +104,8 @@ public class Lockette extends PluginCore{
 		// Load properties and strings.
 		
 		loadProperties(false);
+		
+		this.getCommand("lockette").setExecutor(new CommandHandler(this));
 		
 		
 		// Load external permission/group plugins.
@@ -153,29 +144,6 @@ public class Lockette extends PluginCore{
 		super.onDisable();
 		
 		enabled = false;
-	}
-	
-	
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
-		if(!cmd.getName().equalsIgnoreCase("lockette")) return(false);
-		if(sender instanceof Player) return(true);	// Handling in command preprocess for now.
-		
-		if(args.length == 1){
-			if(args[0].equalsIgnoreCase("reload")){
-				loadProperties(true);
-				
-				localizedMessage(null, Lockette.broadcastReloadTarget, "msg-admin-reload");
-				
-				//String msgString = Lockette.strings.getString("msg-admin-reload");
-				//selectiveBroadcast(Lockette.broadcastReloadTarget, ChatColor.RED + "Lockette: " + msgString);
-			}
-			else if(args[0].equalsIgnoreCase("coredump")){
-				dumpCoreInfo();
-			}
-		}
-		//sender.sendMessage("Lockette: Test");
-		
-		return(true);
 	}
 	
 	
@@ -677,7 +645,7 @@ public class Lockette extends PluginCore{
 				return(true);
 			}
 			else if(text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)){
-				Block		checkBlock = getSignAttachedBlock(block);
+				Block		checkBlock = PluginUtil.getSignAttachedBlock(block);
 				
 				if(checkBlock != null) if(findBlockOwner(checkBlock) != null){
 					return(true);
@@ -703,7 +671,7 @@ public class Lockette extends PluginCore{
 				return(sign.getLine(1).replaceAll("(?i)\u00A7[0-F]", ""));
 			}
 			else if(text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)){
-				Block		checkBlock = getSignAttachedBlock(block);
+				Block		checkBlock = PluginUtil.getSignAttachedBlock(block);
 				
 				if(checkBlock != null){
 					Block		signBlock = findBlockOwner(checkBlock);
@@ -775,7 +743,7 @@ public class Lockette extends PluginCore{
 			if(line.equalsIgnoreCase(name.substring(0, length))) return(true);
 
 			// Check if name is in a group listed on the sign.
-			if(withGroups) if(plugin.inGroup(block.getWorld(), name, line)) return(true);
+			//TODO: if(withGroups) if(plugin.inGroup(block.getWorld(), name, line)) return(true); Update this to be in Lockette.
 		}
 		
 		
@@ -794,7 +762,7 @@ public class Lockette extends PluginCore{
 				if(line.equalsIgnoreCase(name.substring(0, length))) return(true);
 
 				// Check if name is in a group listed on the sign.
-				if(withGroups) if(plugin.inGroup(block.getWorld(), name, line)) return(true);
+				//TODO: if(withGroups) if(plugin.inGroup(block.getWorld(), name, line)) return(true);  Update this to be in Lockette.
 			}
 		}
 		
@@ -847,7 +815,7 @@ public class Lockette extends PluginCore{
 	
 	
 	
-	//********************************************************************************************************************
+/*	//********************************************************************************************************************
 	// Start of external permissions section
 	
 	
@@ -877,6 +845,7 @@ public class Lockette extends PluginCore{
 		return(altOperators);
 	}
 	
+*/
 	
 	//********************************************************************************************************************
 	// Start of utility section
@@ -924,8 +893,8 @@ public class Lockette extends PluginCore{
 		if(player != null) message = message.replaceAll("@@@", player.getName());
 		
 		// Send out the formatted message.
-		if(broadcast != null) selectiveBroadcast(broadcast, color + "[Lockette] " + message);
-		else if(player != null) player.sendMessage(color + "[Lockette] " + message);
+		//TODO: Move this into Lockette: if(broadcast != null) selectiveBroadcast(broadcast, color + "[Lockette] " + message);
+		//TODO: Move this into Lockette: else if(player != null) player.sendMessage(color + "[Lockette] " + message);
 	}
 	
 	
@@ -1043,7 +1012,7 @@ public class Lockette extends PluginCore{
 		if(Lockette.protectTrapDoors) if(type == Material.TRAP_DOOR.getId()){
 			// Need to check block it is attached to as well as other attached trap doors.
 			//return(findBlockOwnerBase(block, ignore, false, false, false, false, false));
-			return(findBlockOwner(getTrapDoorAttachedBlock(block), ignoreBlock, false));
+			return(findBlockOwner(PluginUtil.getTrapDoorAttachedBlock(block), ignoreBlock, false));
 		}
 		if(Lockette.protectDoors) if((type == Material.WOODEN_DOOR.getId()) || (type == Material.IRON_DOOR_BLOCK.getId()) || (type == materialFenceGate)){
 			return(findBlockOwnerBase(block, ignore, true, true, true, true, iterateFurther));
@@ -1273,7 +1242,7 @@ public class Lockette extends PluginCore{
 		
 		if(type == Material.CHEST.getId()) return(findBlockUsersBase(block, true, false, false, false, 0));
 		if(Lockette.protectTrapDoors) if(type == Material.TRAP_DOOR.getId()){
-			return(findBlockUsersBase(getTrapDoorAttachedBlock(block), false, false, false, true, 0));
+			return(findBlockUsersBase(PluginUtil.getTrapDoorAttachedBlock(block), false, false, false, true, 0));
 		}
 		if(Lockette.protectDoors) if((type == Material.WOODEN_DOOR.getId()) || (type == Material.IRON_DOOR_BLOCK.getId()) || (type == materialFenceGate)){
 			return(findBlockUsersBase(block, true, true, true, false, signBlock.getY()));
@@ -1687,6 +1656,20 @@ public class Lockette extends PluginCore{
 		return(defaultValue);
 	}
 	
+	  public boolean playerOnline(String truncName)
+	  {
+	    String text = truncName.replaceAll("(?i)§[0-F]", "");
+	    Player[] players = getServer().getOnlinePlayers();
+
+	    for (int x = 0; x < players.length; x++) {
+	      int length = players[x].getName().length();
+	      if (length > 15) length = 15;
+
+	      if (text.equals(players[x].getName().substring(0, length))) return true;
+	    }
+
+	    return false;
+	  }
 	
 	protected static boolean isInList(Object target, List<Object> list){
 		if(list == null) return(false);
