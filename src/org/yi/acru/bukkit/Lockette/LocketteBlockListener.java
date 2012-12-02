@@ -72,13 +72,13 @@ public class LocketteBlockListener implements Listener{
 	// Start of event section
 	
 	
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.HIGHEST) , ignoreCancelled = true)
 	public void onBlockBreak(BlockBreakEvent event){
 		Player		player = event.getPlayer();
 		Block		block = event.getBlock();
 		int			type = block.getTypeId();
 		
-		if(event.isCancelled()) if(type != Material.WOODEN_DOOR.getId()) return;
+		if(type != Material.WOODEN_DOOR.getId()) return;
 		
 		
 		// Someone is breaking a block, lets see if they are allowed.
