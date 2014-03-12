@@ -32,7 +32,18 @@ import org.bukkit.event.block.SignChangeEvent;
 public class LocketteBlockListener implements Listener{
 	private static Lockette		plugin;
 	
-	final byte		faceList[] = {5, 3, 4, 2};
+	// Facings are reversed as we are attaching signs to blocks.
+	static byte faceList[] = {5, 3, 4, 2};     // SOUTH, WEST, NORTH, EAST
+	static {
+		if (BlockFace.NORTH.getModX() != -1) {
+			// Post CraftBukkit 2502
+			faceList[0] = 3; // SOUTH
+			faceList[1] = 4; // WEST
+			faceList[2] = 2; // NORTH
+			faceList[3] = 5; // EAST
+		}
+	}
+	
 	final int		materialList[] = {Material.CHEST.getId(), Material.DISPENSER.getId(),
 										Material.FURNACE.getId(), Material.BURNING_FURNACE.getId(),
 										Material.BREWING_STAND.getId(), Material.TRAP_DOOR.getId(),
